@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Prompt Cafe
 
-# Run and deploy your AI Studio app
+Prompt Cafe is an isometric 2D prompt-building experience built with React, React Three Fiber, Three.js, and Zustand. You play as the barista-engineer running a futuristic AI prompt bar inside a Silicon Valley office. NPC founders line up with prompt orders and you assemble the perfect response before delivering it to the serving pad.
 
-This contains everything you need to run your app locally.
+## Getting Started
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Hf62VBUhtAfjIiVmbrm5v9w2RYFFgY-9
+### Prerequisites
+- Node.js 18+
 
-## Run Locally
+### Installation
+```bash
+npm install
+```
 
-**Prerequisites:**  Node.js
+### Development Server
+```bash
+npm run dev
+```
 
+The development server runs at http://localhost:3000. The UI overlay and scene rendering are sized to fill the viewport.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Project Structure
+```
+src/
+  App.tsx                # Canvas + overlay wiring
+  index.tsx              # React entry point
+  game/
+    entities/            # Player, NPC, and station renderers
+    hooks/               # Input and collision utilities
+    scene/               # PromptCafeScene configuring camera and environment
+    state/               # Zustand game store
+    systems/             # Modular gameplay logic
+    types.ts             # Shared game domain types
+  ui/                    # HTML overlay HUD and debug utilities
+  assets/                # Pixel-art placeholders for floor, walls, sprites, overworld
+```
+
+## Gameplay Loop
+1. NPCs walk the queue path toward the prompt bar.
+2. Step into the prompt bar zone and press **Space** to assemble the current order.
+3. Carry the assembled prompt to the serving pad and press **Space** to deliver.
+4. Points are awarded based on tone, format, audience, and constraints that match the order. Served NPCs exit and new ones join the queue.
+
+All rendering occurs within a single React Three Fiber `<Canvas>`, and UI data is presented via HTML overlays for clarity and extensibility.

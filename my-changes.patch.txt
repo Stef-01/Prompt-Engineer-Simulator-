@@ -1,0 +1,2057 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/.gitattributes b/.gitattributes
+new file mode 100644
+index 0000000000000000000000000000000000000000..94e2bc7408abf38a6e249a0ed3758c9620ea51a8
+--- /dev/null
++++ b/.gitattributes
+@@ -0,0 +1,5 @@
++*.png binary
++*.jpg binary
++*.jpeg binary
++*.gif binary
++*.webp binary
+diff --git a/App.tsx b/App.tsx
+deleted file mode 100644
+index 590e9fbcd156e2e45a85db5bb22bea2726520f22..0000000000000000000000000000000000000000
+--- a/App.tsx
++++ /dev/null
+@@ -1,97 +0,0 @@
+-
+-import React, { useState, useCallback } from 'react';
+-import { GamePlan } from './types';
+-import { generateGamePlan } from './services/geminiService';
+-import GamePlanDisplay from './components/GamePlanDisplay';
+-import LoadingSpinner from './components/LoadingSpinner';
+-import ErrorMessage from './components/ErrorMessage';
+-
+-const App: React.FC = () => {
+-  const [gameIdea, setGameIdea] = useState<string>('');
+-  const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
+-  const [isLoading, setIsLoading] = useState<boolean>(false);
+-  const [error, setError] = useState<string | null>(null);
+-
+-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+-    e.preventDefault();
+-    if (!gameIdea.trim()) {
+-      setError("Please enter a game concept.");
+-      return;
+-    }
+-
+-    setIsLoading(true);
+-    setError(null);
+-    setGamePlan(null);
+-
+-    try {
+-      const plan = await generateGamePlan(gameIdea);
+-      setGamePlan(plan);
+-    } catch (err) {
+-      setError(err instanceof Error ? err.message : "An unknown error occurred.");
+-    } finally {
+-      setIsLoading(false);
+-    }
+-  }, [gameIdea]);
+-
+-  return (
+-    <div className="min-h-screen bg-gray-900 text-white font-sans flex flex-col items-center p-4">
+-      <style>{`
+-        @keyframes fade-in {
+-          from { opacity: 0; transform: translateY(-10px); }
+-          to { opacity: 1; transform: translateY(0); }
+-        }
+-        .animate-fade-in {
+-          animation: fade-in 0.5s ease-out forwards;
+-        }
+-      `}</style>
+-
+-      <main className="w-full max-w-4xl mx-auto">
+-        <header className="text-center my-8 md:my-12 animate-fade-in">
+-          <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">
+-            Prompt Engineering Game Planner
+-          </h1>
+-          <p className="mt-4 text-lg text-gray-400">
+-            Turn your spark of an idea into a playable concept. Describe your game, and let AI build the foundation.
+-          </p>
+-        </header>
+-
+-        <div className="bg-gray-800/50 p-6 rounded-xl shadow-2xl border border-gray-700 backdrop-blur-sm animate-fade-in" style={{animationDelay: '0.2s'}}>
+-          <form onSubmit={handleSubmit}>
+-            <label htmlFor="gameIdea" className="block text-lg font-medium text-sky-300 mb-2">
+-              Enter Your Game Concept
+-            </label>
+-            <textarea
+-              id="gameIdea"
+-              rows={4}
+-              value={gameIdea}
+-              onChange={(e) => setGameIdea(e.target.value)}
+-              className="w-full p-3 bg-gray-900/70 border border-gray-600 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition duration-300 placeholder-gray-500"
+-              placeholder="e.g., A detective game where players craft prompts to interrogate AI witnesses..."
+-              disabled={isLoading}
+-            />
+-            <button
+-              type="submit"
+-              disabled={isLoading}
+-              className="mt-4 w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-300"
+-            >
+-              {isLoading ? 'Generating...' : 'Create Game Plan'}
+-            </button>
+-          </form>
+-        </div>
+-        
+-        <div className="mt-8">
+-            {isLoading && <LoadingSpinner />}
+-            {error && <ErrorMessage message={error} />}
+-            {gamePlan && <GamePlanDisplay plan={gamePlan} />}
+-        </div>
+-      </main>
+-      
+-      <footer className="w-full max-w-4xl mx-auto text-center py-6 text-gray-500 text-sm mt-8">
+-          <p>Powered by Gemini API</p>
+-      </footer>
+-    </div>
+-  );
+-};
+-
+-export default App;
+-   
+\ No newline at end of file
+diff --git a/README.md b/README.md
+index baa8c7943520c7a075d79126c50992dcc4a1b53b..4306fc473323baad8a1707e7b5ecb23f3f0ed4e5 100644
+--- a/README.md
++++ b/README.md
+@@ -1,20 +1,44 @@
+-<div align="center">
+-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+-</div>
++# Prompt Cafe
+ 
+-# Run and deploy your AI Studio app
++Prompt Cafe is an isometric 2D prompt-building experience built with React, React Three Fiber, Three.js, and Zustand. You play as the barista-engineer running a futuristic AI prompt bar inside a Silicon Valley office. NPC founders line up with prompt orders and you assemble the perfect response before delivering it to the serving pad.
+ 
+-This contains everything you need to run your app locally.
++## Getting Started
+ 
+-View your app in AI Studio: https://ai.studio/apps/drive/1Hf62VBUhtAfjIiVmbrm5v9w2RYFFgY-9
++### Prerequisites
++- Node.js 18+
+ 
+-## Run Locally
++### Installation
++```bash
++npm install
++```
+ 
+-**Prerequisites:**  Node.js
++### Development Server
++```bash
++npm run dev
++```
+ 
++The development server runs at http://localhost:3000. The UI overlay and scene rendering are sized to fill the viewport.
+ 
+-1. Install dependencies:
+-   `npm install`
+-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+-3. Run the app:
+-   `npm run dev`
++## Project Structure
++```
++src/
++  App.tsx                # Canvas + overlay wiring
++  index.tsx              # React entry point
++  game/
++    entities/            # Player, NPC, and station renderers
++    hooks/               # Input and collision utilities
++    scene/               # PromptCafeScene configuring camera and environment
++    state/               # Zustand game store
++    systems/             # Modular gameplay logic
++    types.ts             # Shared game domain types
++  ui/                    # HTML overlay HUD and debug utilities
++  assets/                # Pixel-art placeholders for floor, walls, sprites, overworld
++```
++
++## Gameplay Loop
++1. NPCs walk the queue path toward the prompt bar.
++2. Step into the prompt bar zone and press **Space** to assemble the current order.
++3. Carry the assembled prompt to the serving pad and press **Space** to deliver.
++4. Points are awarded based on tone, format, audience, and constraints that match the order. Served NPCs exit and new ones join the queue.
++
++All rendering occurs within a single React Three Fiber `<Canvas>`, and UI data is presented via HTML overlays for clarity and extensibility.
+diff --git a/components/ErrorMessage.tsx b/components/ErrorMessage.tsx
+deleted file mode 100644
+index 1dd46aa573591fef2dfed7fa48457dcf0a722cac..0000000000000000000000000000000000000000
+--- a/components/ErrorMessage.tsx
++++ /dev/null
+@@ -1,18 +0,0 @@
+-
+-import React from 'react';
+-
+-interface ErrorMessageProps {
+-  message: string;
+-}
+-
+-const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
+-  return (
+-    <div className="bg-red-900/50 border border-red-600 text-red-200 px-4 py-3 rounded-lg relative my-4" role="alert">
+-      <strong className="font-bold">Oops! </strong>
+-      <span className="block sm:inline">{message}</span>
+-    </div>
+-  );
+-};
+-
+-export default ErrorMessage;
+-   
+\ No newline at end of file
+diff --git a/components/GamePlanDisplay.tsx b/components/GamePlanDisplay.tsx
+deleted file mode 100644
+index 0267dfa42df8ee0253ee4966a013c9d176ab8ecc..0000000000000000000000000000000000000000
+--- a/components/GamePlanDisplay.tsx
++++ /dev/null
+@@ -1,75 +0,0 @@
+-
+-import React from 'react';
+-import { GamePlan } from '../types';
+-
+-interface GamePlanDisplayProps {
+-  plan: GamePlan;
+-}
+-
+-const SectionCard: React.FC<{ title: string; children: React.ReactNode, icon: React.ReactNode }> = ({ title, children, icon }) => (
+-    <div className="bg-gray-800/50 border border-gray-700 rounded-xl shadow-lg overflow-hidden backdrop-blur-sm">
+-        <div className="p-5">
+-            <h2 className="flex items-center text-2xl font-bold text-sky-300 mb-4">
+-                {icon}
+-                <span className="ml-3">{title}</span>
+-            </h2>
+-            <div className="text-gray-300 space-y-3">{children}</div>
+-        </div>
+-    </div>
+-);
+-
+-const GamePlanDisplay: React.FC<GamePlanDisplayProps> = ({ plan }) => {
+-  return (
+-    <div className="animate-fade-in space-y-8 p-4 md:p-0">
+-      <header className="text-center my-8">
+-        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 mb-2">
+-          {plan.title}
+-        </h1>
+-        <p className="text-xl text-gray-400 italic">"{plan.tagline}"</p>
+-      </header>
+-      
+-      <div className="grid md:grid-cols-2 gap-8">
+-        <SectionCard title="Core Loop" icon={
+-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" /></svg>
+-        }>
+-          <ol className="list-decimal list-inside space-y-2">
+-            {plan.coreLoop.map((step, index) => <li key={index}>{step}</li>)}
+-          </ol>
+-        </SectionCard>
+-
+-        <SectionCard title="Learning Objectives" icon={
+-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+-        }>
+-          <ul className="list-disc list-inside space-y-2">
+-            {plan.learningObjectives.map((objective, index) => <li key={index}>{objective}</li>)}
+-          </ul>
+-        </SectionCard>
+-      </div>
+-
+-      <SectionCard title="Levels" icon={
+-          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+-      }>
+-        <div className="space-y-6">
+-          {plan.levels.map((level, index) => (
+-            <div key={index} className="p-4 bg-gray-900/60 border border-gray-600 rounded-lg">
+-              <h3 className="text-lg font-semibold text-sky-400">{index + 1}. {level.title}</h3>
+-              <p className="mt-1 text-gray-400">{level.description}</p>
+-              <div className="mt-3 p-3 bg-gray-800 border-l-4 border-sky-500 rounded-r-md">
+-                <p className="font-mono text-sm text-gray-300"><strong className="text-gray-500">// Example Challenge:</strong> {level.exampleChallenge}</p>
+-              </div>
+-            </div>
+-          ))}
+-        </div>
+-      </SectionCard>
+-      
+-       <SectionCard title="Monetization Idea" icon={
+-           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg>
+-       }>
+-           <p>{plan.monetizationIdea}</p>
+-       </SectionCard>
+-    </div>
+-  );
+-};
+-
+-export default GamePlanDisplay;
+-   
+\ No newline at end of file
+diff --git a/components/LoadingSpinner.tsx b/components/LoadingSpinner.tsx
+deleted file mode 100644
+index 67c87eb7927ceb470aeda9717cfa1ec05210384c..0000000000000000000000000000000000000000
+--- a/components/LoadingSpinner.tsx
++++ /dev/null
+@@ -1,33 +0,0 @@
+-
+-import React from 'react';
+-
+-const LoadingSpinner: React.FC = () => {
+-  return (
+-    <div className="flex justify-center items-center p-8">
+-      <svg
+-        className="animate-spin -ml-1 mr-3 h-10 w-10 text-sky-400"
+-        xmlns="http://www.w3.org/2000/svg"
+-        fill="none"
+-        viewBox="0 0 24 24"
+-      >
+-        <circle
+-          className="opacity-25"
+-          cx="12"
+-          cy="12"
+-          r="10"
+-          stroke="currentColor"
+-          strokeWidth="4"
+-        ></circle>
+-        <path
+-          className="opacity-75"
+-          fill="currentColor"
+-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+-        ></path>
+-      </svg>
+-      <span className="text-lg text-gray-300">Generating your masterpiece...</span>
+-    </div>
+-  );
+-};
+-
+-export default LoadingSpinner;
+-   
+\ No newline at end of file
+diff --git a/index.html b/index.html
+index 9a8b8da5785c4096bf348fc9357570512eaafa33..93c476050a00c8a531e03dd2e3dc7aa40f546cf9 100644
+--- a/index.html
++++ b/index.html
+@@ -1,26 +1,13 @@
+-
+ <!DOCTYPE html>
+ <html lang="en">
+   <head>
+     <meta charset="UTF-8" />
+     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Prompt Engineering Game Planner</title>
+-    <script src="https://cdn.tailwindcss.com"></script>
+-  <script type="importmap">
+-{
+-  "imports": {
+-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+-    "react": "https://aistudiocdn.com/react@^19.2.0"
+-  }
+-}
+-</script>
+-</head>
+-  <body class="bg-gray-900">
++    <title>Prompt Cafe</title>
++  </head>
++  <body>
+     <div id="root"></div>
+-    <script type="module" src="/index.tsx"></script>
++    <script type="module" src="/src/index.tsx"></script>
+   </body>
+ </html>
+-   
+\ No newline at end of file
+diff --git a/index.tsx b/index.tsx
+deleted file mode 100644
+index afee0d14a73ab4e570981d0c2e936ebfe231f226..0000000000000000000000000000000000000000
+--- a/index.tsx
++++ /dev/null
+@@ -1,17 +0,0 @@
+-
+-import React from 'react';
+-import ReactDOM from 'react-dom/client';
+-import App from './App';
+-
+-const rootElement = document.getElementById('root');
+-if (!rootElement) {
+-  throw new Error("Could not find root element to mount to");
+-}
+-
+-const root = ReactDOM.createRoot(rootElement);
+-root.render(
+-  <React.StrictMode>
+-    <App />
+-  </React.StrictMode>
+-);
+-   
+\ No newline at end of file
+diff --git a/metadata.json b/metadata.json
+deleted file mode 100644
+index 94bb818d9ca1940f96dff17e5aedefae4661a42c..0000000000000000000000000000000000000000
+--- a/metadata.json
++++ /dev/null
+@@ -1,5 +0,0 @@
+-{
+-  "name": "Prompt Engineering Game Planner",
+-  "description": "Generate a basic plan for a game focused on prompt engineering. Provide a core concept, and the AI will create a structured game plan including a title, core loop, learning objectives, and example levels.",
+-  "requestFramePermissions": []
+-}
+\ No newline at end of file
+diff --git a/package.json b/package.json
+index 41c889ce179916255914544ce9487dc08f277cc3..2ed9f3cd3fef3ba32d08a88fcbeff7834e965d0a 100644
+--- a/package.json
++++ b/package.json
+@@ -1,22 +1,24 @@
+ {
+-  "name": "prompt-engineering-game-planner",
++  "name": "prompt-cafe",
+   "private": true,
+-  "version": "0.0.0",
++  "version": "0.0.1",
+   "type": "module",
+   "scripts": {
+     "dev": "vite",
+     "build": "vite build",
+     "preview": "vite preview"
+   },
+   "dependencies": {
+-    "@google/genai": "^1.29.0",
++    "@react-three/fiber": "^9.0.0",
++    "react": "^19.2.0",
+     "react-dom": "^19.2.0",
+-    "react": "^19.2.0"
++    "three": "^0.171.0",
++    "zustand": "^5.0.1"
+   },
+   "devDependencies": {
+     "@types/node": "^22.14.0",
+     "@vitejs/plugin-react": "^5.0.0",
+     "typescript": "~5.8.2",
+     "vite": "^6.2.0"
+   }
+ }
+diff --git a/services/geminiService.ts b/services/geminiService.ts
+deleted file mode 100644
+index f191beb4e510b6768730b4cb76c39585e5bbbd9b..0000000000000000000000000000000000000000
+--- a/services/geminiService.ts
++++ /dev/null
+@@ -1,90 +0,0 @@
+-
+-import { GoogleGenAI, Type } from "@google/genai";
+-import { GamePlan } from '../types';
+-
+-const API_KEY = process.env.API_KEY;
+-
+-if (!API_KEY) {
+-  throw new Error("API_KEY environment variable not set");
+-}
+-
+-const ai = new GoogleGenAI({ apiKey: API_KEY });
+-
+-const responseSchema = {
+-  type: Type.OBJECT,
+-  properties: {
+-    title: {
+-      type: Type.STRING,
+-      description: "A catchy and relevant title for the game.",
+-    },
+-    tagline: {
+-      type: Type.STRING,
+-      description: "A short, memorable slogan for the game.",
+-    },
+-    coreLoop: {
+-      type: Type.ARRAY,
+-      items: {
+-        type: Type.STRING,
+-      },
+-      description: "The primary sequence of actions the player repeats.",
+-    },
+-    learningObjectives: {
+-      type: Type.ARRAY,
+-      items: {
+-        type: Type.STRING,
+-      },
+-      description: "What players will learn about prompt engineering.",
+-    },
+-    levels: {
+-      type: Type.ARRAY,
+-      items: {
+-        type: Type.OBJECT,
+-        properties: {
+-          title: {
+-            type: Type.STRING,
+-            description: "The title of the game level or chapter.",
+-          },
+-          description: {
+-            type: Type.STRING,
+-            description: "A brief overview of what the level covers.",
+-          },
+-          exampleChallenge: {
+-            type: Type.STRING,
+-            description: "A specific example of a puzzle or challenge in this level.",
+-          },
+-        },
+-        required: ["title", "description", "exampleChallenge"],
+-      },
+-      description: "A breakdown of the game's progression through levels or chapters.",
+-    },
+-    monetizationIdea: {
+-      type: Type.STRING,
+-      description: "A creative idea for how the game could be monetized.",
+-    },
+-  },
+-  required: ["title", "tagline", "coreLoop", "learningObjectives", "levels", "monetizationIdea"],
+-};
+-
+-export const generateGamePlan = async (gameIdea: string): Promise<GamePlan> => {
+-  try {
+-    const response = await ai.models.generateContent({
+-      model: "gemini-2.5-flash",
+-      contents: `Based on the following game concept, generate a basic game plan. Concept: "${gameIdea}"`,
+-      config: {
+-        systemInstruction: "You are an expert game designer specializing in creating engaging educational games. Your task is to generate a basic game plan based on the user's concept. The game should be focused on teaching the principles of prompt engineering. The output must be a valid JSON object matching the provided schema.",
+-        responseMimeType: "application/json",
+-        responseSchema,
+-      },
+-    });
+-
+-    const jsonText = response.text.trim();
+-    return JSON.parse(jsonText);
+-  } catch (error) {
+-    console.error("Error generating game plan:", error);
+-    if (error instanceof Error) {
+-        throw new Error(`Failed to generate game plan from Gemini API: ${error.message}`);
+-    }
+-    throw new Error("An unknown error occurred while generating the game plan.");
+-  }
+-};
+-   
+\ No newline at end of file
+diff --git a/src/App.tsx b/src/App.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..4e11eb7303fd5cd6c933d1530c8d55fe2f7b79b5
+--- /dev/null
++++ b/src/App.tsx
+@@ -0,0 +1,29 @@
++import { Canvas } from '@react-three/fiber';
++import { Suspense } from 'react';
++import PromptCafeScene from './game/scene/PromptCafeScene';
++import Hud from './ui/Hud';
++import DebugPanel from './ui/DebugPanel';
++
++const App = () => {
++  return (
++    <div className="app-container">
++      <Canvas
++        className="app-canvas"
++        orthographic
++        dpr={[1, 1]}
++        gl={{ antialias: false }}
++        camera={{ position: [12, 12, 12], zoom: 45 }}
++      >
++        <Suspense fallback={null}>
++          <PromptCafeScene />
++        </Suspense>
++      </Canvas>
++      <div className="hud-overlay">
++        <Hud />
++      </div>
++      <DebugPanel />
++    </div>
++  );
++};
++
++export default App;
+diff --git a/src/assets/overworld/overworld.png b/src/assets/overworld/overworld.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..d189d36f4e008645d12459d6aed950ee3ebba31c
+GIT binary patch
+literal 450
+zcmeAS@N?(olHy`uVBq!ia0y~yU<5K54sb95$&`LAL!dyXr;B4q#jUrO9eEiTIF4-i
+ztk17%!65u6BZ$>|+N;LxN{nm_%nghO7!nu^7$g{Y7^uxPXyBrSu}BU^V$#GbYypfE
+chfqN#<An|PKKf?(KLtgRr>mdKI;Vst0N=q&G5`Po
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/sprites/holo_station.png b/src/assets/sprites/holo_station.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..fee7d117339430eabb38258dd4d01caf098f5f47
+GIT binary patch
+literal 111
+zcmeAS@N?(olHy`uVBq!ia0vp^4nVBH!2~3A|G&Hpq|7{B978H@y*=;9$-uzDvY|WI
+pB|4LB{-FfcX|F1EnXrR!Zs8k086*~lr2tJ}@O1TaS?83{1OPO`7-s+g
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/sprites/npc_generic.png b/src/assets/sprites/npc_generic.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..f8cee93651e3fa59884a6b9d91605086811b4d59
+GIT binary patch
+literal 109
+zcmeAS@N?(olHy`uVBq!ia0vp^3P9|@!2~3~ym|B!NSS!LIEGZ*dVAK9lYxPQWkYwa
+xOLQie{Go*Zsk{7K6$Cg~m>M0Bse{`S7)1kqGW-uzTL#q6;OXk;vd$@?2>`s$9OwW5
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/sprites/player_sheet.png b/src/assets/sprites/player_sheet.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..97dd9ed98f42fa78a2807e889ced7756e21841f7
+GIT binary patch
+literal 181
+zcmeAS@N?(olHy`uVBq!ia0vp^4nW+%!2~2t9{;cfQZ=3~jv*Dd-kxXVWMJT6-r#Ps
+o$Ty!aaRbxoocQhrnt}t2<@JxJe0}ko1?Ub2Pgg&ebxsLQ0A^N5d;kCd
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/sprites/prompt_bar.png b/src/assets/sprites/prompt_bar.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..f0bd7237b5cdab9697e47c7aa10baec08fde1d2a
+GIT binary patch
+literal 112
+zcmeAS@N?(olHy`uVBq!ia0vp^4nVBH!2~3A|G&Hpq|7~C978H@y*=;9$-uzDvf=go
+q;|XRLc<fpaa_L<C9L0hitP|60lC(M9aXJ!c1cRrmpUXO@geCy3{2Ijo
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/tiles/cafe_floor.png b/src/assets/tiles/cafe_floor.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f5d04378e4b4485deb923cb5b5f700ce23375dd
+GIT binary patch
+literal 79
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!61SBU+%rFB|VxBIJAr-fhZxlVZ_v}avIlQ9n
+c;c7;PSI7G0XB?b#1gL_+)78&qol`;+0M$_!CjbBd
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/assets/tiles/cafe_walls.png b/src/assets/tiles/cafe_walls.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..c06432b2a4bd44783a26a4c6f75e1118d6f1d738
+GIT binary patch
+literal 79
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!61SBU+%rFB|VxBIJAr-fhEk3@n_v}avIlQ9n
+c;c7;Pj}>d>%L8|P1*%~1boFyt=akR{0LkALssI20
+
+literal 0
+HcmV?d00001
+
+diff --git a/src/game/entities/NPCs.tsx b/src/game/entities/NPCs.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..641df93aed520e803781e80a206d4c9fb5dcae27
+--- /dev/null
++++ b/src/game/entities/NPCs.tsx
+@@ -0,0 +1,31 @@
++import { useEffect } from 'react';
++import { DoubleSide, NearestFilter, TextureLoader } from 'three';
++import { useLoader } from '@react-three/fiber';
++import { useGameStore } from '../state/useGameStore';
++
++const NPC_SPRITE = '/src/assets/sprites/npc_generic.png';
++
++const NPCs = () => {
++  const texture = useLoader(TextureLoader, NPC_SPRITE);
++  const npcs = useGameStore((state) => state.npcs);
++
++  useEffect(() => {
++    texture.magFilter = NearestFilter;
++    texture.minFilter = NearestFilter;
++  }, [texture]);
++
++  return (
++    <group>
++      {npcs.map((npc) => (
++        <group key={npc.id} position={npc.position}>
++          <mesh position={[0, 0.45, 0]}>
++            <planeGeometry args={[1.1, 1.5]} />
++            <meshBasicMaterial map={texture} transparent side={DoubleSide} />
++          </mesh>
++        </group>
++      ))}
++    </group>
++  );
++};
++
++export default NPCs;
+diff --git a/src/game/entities/Player.tsx b/src/game/entities/Player.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd6a4d8e21f0e6e491ff24cbad00e2d1c6747d5a
+--- /dev/null
++++ b/src/game/entities/Player.tsx
+@@ -0,0 +1,79 @@
++import { useEffect, useMemo, useRef, useState } from 'react';
++import { DoubleSide, NearestFilter, TextureLoader } from 'three';
++import { useFrame, useLoader } from '@react-three/fiber';
++import { useGameStore } from '../state/useGameStore';
++
++const PLAYER_SPRITE = '/src/assets/sprites/player_sheet.png';
++const SPRITE_COLS = 4;
++const SPRITE_ROWS = 8;
++const IDLE_FRAME = 0;
++const FRAME_DURATION = 0.15;
++
++const Player = () => {
++  const texture = useLoader(TextureLoader, PLAYER_SPRITE);
++  const { playerPosition, playerFacing } = useGameStore((state) => ({
++    playerPosition: state.playerPosition,
++    playerFacing: state.playerFacing,
++  }));
++
++  const [frame, setFrame] = useState(0);
++  const accumulator = useRef(0);
++
++  const rowLookup = useMemo(
++    () => ({
++      'idle-up-left': 0,
++      'walk-up-left': 0,
++      'idle-up-right': 1,
++      'walk-up-right': 1,
++      'idle-down-left': 2,
++      'walk-down-left': 2,
++      'idle-down-right': 3,
++      'walk-down-right': 3,
++    }),
++    []
++  );
++
++  useEffect(() => {
++    texture.magFilter = NearestFilter;
++    texture.minFilter = NearestFilter;
++    texture.needsUpdate = true;
++    texture.repeat.set(1 / SPRITE_COLS, 1 / SPRITE_ROWS);
++  }, [texture]);
++
++  useEffect(() => {
++    setFrame(IDLE_FRAME);
++    accumulator.current = 0;
++  }, [playerFacing]);
++
++  useFrame((_, delta) => {
++    const isWalking = playerFacing.startsWith('walk');
++    if (!isWalking) {
++      setFrame(IDLE_FRAME);
++      return;
++    }
++    accumulator.current += delta;
++    if (accumulator.current > FRAME_DURATION) {
++      accumulator.current = 0;
++      setFrame((prev) => (prev + 1) % SPRITE_COLS);
++    }
++  });
++
++  const row = rowLookup[playerFacing] ?? 0;
++  const frameWidth = 1 / SPRITE_COLS;
++  const frameHeight = 1 / SPRITE_ROWS;
++
++  useEffect(() => {
++    texture.offset.set(frame * frameWidth, 1 - frameHeight * (row + 1));
++  }, [texture, frame, frameWidth, frameHeight, row]);
++
++  return (
++    <group position={playerPosition}>
++      <mesh position={[0, 0.5, 0]}>
++        <planeGeometry args={[1.2, 1.6]} />
++        <meshBasicMaterial map={texture} transparent side={DoubleSide} />
++      </mesh>
++    </group>
++  );
++};
++
++export default Player;
+diff --git a/src/game/entities/Stations.tsx b/src/game/entities/Stations.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..0dcbbd2bffef8aec2f13b34976d59f31a0cd62dd
+--- /dev/null
++++ b/src/game/entities/Stations.tsx
+@@ -0,0 +1,56 @@
++import { useEffect } from 'react';
++import { DoubleSide, NearestFilter, TextureLoader } from 'three';
++import { useLoader } from '@react-three/fiber';
++import { useGameStore } from '../state/useGameStore';
++
++const COUNTER_SPRITE = '/src/assets/sprites/prompt_bar.png';
++const HOLOGRAPHIC_STATION = '/src/assets/sprites/holo_station.png';
++const OVERWORLD_BACKDROP = '/src/assets/overworld/overworld.png';
++
++const Stations = () => {
++  const counterTexture = useLoader(TextureLoader, COUNTER_SPRITE);
++  const holoTexture = useLoader(TextureLoader, HOLOGRAPHIC_STATION);
++  const overworldTexture = useLoader(TextureLoader, OVERWORLD_BACKDROP);
++  const { barStations, servingPad } = useGameStore((state) => ({
++    barStations: state.barStations,
++    servingPad: state.servingPad,
++  }));
++
++  useEffect(() => {
++    [counterTexture, holoTexture, overworldTexture].forEach((texture) => {
++      texture.magFilter = NearestFilter;
++      texture.minFilter = NearestFilter;
++    });
++  }, [counterTexture, holoTexture, overworldTexture]);
++
++  return (
++    <group>
++      <mesh position={[0, 3.9, -7.8]} rotation={[0, 0, 0]}>
++        <planeGeometry args={[16, 8]} />
++        <meshBasicMaterial map={overworldTexture} transparent side={DoubleSide} />
++      </mesh>
++
++      <mesh position={[servingPad[0], 0.01, servingPad[2]]} rotation={[-Math.PI / 2, 0, 0]}>
++        <circleGeometry args={[1.25, 32]} />
++        <meshStandardMaterial color="#a5f3fc" transparent opacity={0.55} />
++      </mesh>
++
++      <group>
++        {barStations.map((station, index) => (
++          <group key={`station-${index}`} position={[station[0], 0, station[2]]}>
++            <mesh position={[0, 0.5, 0]}>
++              <planeGeometry args={[1.8, 1.2]} />
++              <meshBasicMaterial map={counterTexture} transparent side={DoubleSide} />
++            </mesh>
++            <mesh position={[0, 1.2, -0.2]}>
++              <planeGeometry args={[1.6, 1.2]} />
++              <meshBasicMaterial map={holoTexture} transparent side={DoubleSide} />
++            </mesh>
++          </group>
++        ))}
++      </group>
++    </group>
++  );
++};
++
++export default Stations;
+diff --git a/src/game/hooks/useCollision.ts b/src/game/hooks/useCollision.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6e2b629109941f644afee3cae17d8a40c7061a76
+--- /dev/null
++++ b/src/game/hooks/useCollision.ts
+@@ -0,0 +1,47 @@
++export type AABB = {
++  min: [number, number, number];
++  max: [number, number, number];
++};
++
++export const createAABB = (center: [number, number, number], halfSize: [number, number, number]): AABB => {
++  const [cx, cy, cz] = center;
++  const [hx, hy, hz] = halfSize;
++  return {
++    min: [cx - hx, cy - hy, cz - hz],
++    max: [cx + hx, cy + hy, cz + hz],
++  };
++};
++
++export const isPointInsideAABB = (point: [number, number, number], box: AABB): boolean => {
++  return (
++    point[0] >= box.min[0] &&
++    point[0] <= box.max[0] &&
++    point[1] >= box.min[1] &&
++    point[1] <= box.max[1] &&
++    point[2] >= box.min[2] &&
++    point[2] <= box.max[2]
++  );
++};
++
++export const aabbOverlap = (a: AABB, b: AABB): boolean => {
++  return (
++    a.min[0] <= b.max[0] &&
++    a.max[0] >= b.min[0] &&
++    a.min[1] <= b.max[1] &&
++    a.max[1] >= b.min[1] &&
++    a.min[2] <= b.max[2] &&
++    a.max[2] >= b.min[2]
++  );
++};
++
++export const clampToBounds = (
++  position: [number, number, number],
++  bounds: AABB
++): [number, number, number] => {
++  const [x, y, z] = position;
++  return [
++    Math.min(bounds.max[0], Math.max(bounds.min[0], x)),
++    Math.min(bounds.max[1], Math.max(bounds.min[1], y)),
++    Math.min(bounds.max[2], Math.max(bounds.min[2], z)),
++  ];
++};
+diff --git a/src/game/hooks/usePlayerControls.ts b/src/game/hooks/usePlayerControls.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..9a89763d19156aa40d33ef5610922e4f69e52c64
+--- /dev/null
++++ b/src/game/hooks/usePlayerControls.ts
+@@ -0,0 +1,94 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { Vector2 } from 'three';
++
++type FacingDirection =
++  | 'idle-up-left'
++  | 'idle-up-right'
++  | 'idle-down-left'
++  | 'idle-down-right'
++  | 'walk-up-left'
++  | 'walk-up-right'
++  | 'walk-down-left'
++  | 'walk-down-right';
++
++type PlayerControls = {
++  movement: Vector2;
++  facing: FacingDirection;
++  interacting: boolean;
++  consumeInteraction: () => void;
++};
++
++const directionFromVector = (vector: Vector2, isMoving: boolean): FacingDirection => {
++  if (!isMoving) {
++    if (vector.y >= 0 && vector.x <= 0) return 'idle-up-left';
++    if (vector.y >= 0 && vector.x >= 0) return 'idle-up-right';
++    if (vector.y < 0 && vector.x <= 0) return 'idle-down-left';
++    return 'idle-down-right';
++  }
++
++  if (vector.y >= 0 && vector.x <= 0) return 'walk-up-left';
++  if (vector.y >= 0 && vector.x >= 0) return 'walk-up-right';
++  if (vector.y < 0 && vector.x <= 0) return 'walk-down-left';
++  return 'walk-down-right';
++};
++
++export const usePlayerControls = (): PlayerControls => {
++  const [movement, setMovement] = useState(() => new Vector2());
++  const [facing, setFacing] = useState<FacingDirection>('idle-down-right');
++  const [interacting, setInteracting] = useState(false);
++  const keys = useRef<Record<string, boolean>>({});
++  const lastDirection = useRef(new Vector2(1, -1));
++
++  const updateMovement = useCallback(() => {
++    const direction = new Vector2();
++    if (keys.current['ArrowUp'] || keys.current['KeyW']) direction.y += 1;
++    if (keys.current['ArrowDown'] || keys.current['KeyS']) direction.y -= 1;
++    if (keys.current['ArrowLeft'] || keys.current['KeyA']) direction.x -= 1;
++    if (keys.current['ArrowRight'] || keys.current['KeyD']) direction.x += 1;
++    direction.clampLength(0, 1);
++    setMovement(direction);
++
++    if (direction.lengthSq() > 0) {
++      lastDirection.current.copy(direction);
++      setFacing(directionFromVector(direction, true));
++    } else {
++      setFacing(directionFromVector(lastDirection.current, false));
++    }
++  }, []);
++
++  useEffect(() => {
++    const handleKeyDown = (event: KeyboardEvent) => {
++      keys.current[event.code] = true;
++      if (event.code === 'Space') {
++        setInteracting(true);
++      }
++      updateMovement();
++    };
++
++    const handleKeyUp = (event: KeyboardEvent) => {
++      keys.current[event.code] = false;
++      updateMovement();
++    };
++
++    window.addEventListener('keydown', handleKeyDown);
++    window.addEventListener('keyup', handleKeyUp);
++
++    return () => {
++      window.removeEventListener('keydown', handleKeyDown);
++      window.removeEventListener('keyup', handleKeyUp);
++    };
++  }, [updateMovement]);
++
++  const consumeInteraction = useCallback(() => {
++    setInteracting(false);
++  }, []);
++
++  return {
++    movement,
++    facing,
++    interacting,
++    consumeInteraction,
++  };
++};
++
++export type { PlayerControls };
+diff --git a/src/game/scene/PromptCafeScene.tsx b/src/game/scene/PromptCafeScene.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..ada69d622fec1e26dc47a2f5dcb9f62451d3ec6b
+--- /dev/null
++++ b/src/game/scene/PromptCafeScene.tsx
+@@ -0,0 +1,143 @@
++import { useEffect, useMemo, useRef } from 'react';
++import { Color, NearestFilter, OrthographicCamera, RepeatWrapping, TextureLoader, Vector3 } from 'three';
++import { useFrame, useLoader, useThree } from '@react-three/fiber';
++import { useGameStore } from '../state/useGameStore';
++import Player from '../entities/Player';
++import NPCs from '../entities/NPCs';
++import Stations from '../entities/Stations';
++import { updatePlayer } from '../systems/MovementSystem';
++import { processInteractions } from '../systems/CollisionSystem';
++import { usePlayerControls } from '../hooks/usePlayerControls';
++
++const FLOOR_TEXTURE = '/src/assets/tiles/cafe_floor.png';
++const WALL_TEXTURE = '/src/assets/tiles/cafe_walls.png';
++
++const FLOOR_SIZE = 16;
++const FLOOR_REPEAT = 8;
++
++const Floor = () => {
++  const texture = useLoader(TextureLoader, FLOOR_TEXTURE);
++  const { gl } = useThree();
++
++  useEffect(() => {
++    texture.magFilter = NearestFilter;
++    texture.minFilter = NearestFilter;
++    texture.wrapS = RepeatWrapping;
++    texture.wrapT = RepeatWrapping;
++    texture.repeat.set(FLOOR_REPEAT, FLOOR_REPEAT);
++    gl.setPixelRatio(1);
++  }, [texture, gl]);
++
++  return (
++    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
++      <planeGeometry args={[FLOOR_SIZE, FLOOR_SIZE, FLOOR_REPEAT, FLOOR_REPEAT]} />
++      <meshStandardMaterial map={texture} color="#ffffff" />
++    </mesh>
++  );
++};
++
++const Walls = () => {
++  const texture = useLoader(TextureLoader, WALL_TEXTURE);
++
++  useEffect(() => {
++    texture.magFilter = NearestFilter;
++    texture.minFilter = NearestFilter;
++  }, [texture]);
++
++  const positions: Array<{ position: Vector3; rotation: [number, number, number]; size: [number, number]; }> = useMemo(
++    () => [
++      { position: new Vector3(0, 4, -FLOOR_SIZE / 2), rotation: [0, 0, 0], size: [FLOOR_SIZE, 4] },
++      { position: new Vector3(-FLOOR_SIZE / 2, 4, 0), rotation: [0, Math.PI / 2, 0], size: [FLOOR_SIZE, 4] },
++    ],
++    []
++  );
++
++  return (
++    <group>
++      {positions.map((wall, index) => (
++        <mesh key={`wall-${index}`} position={wall.position} rotation={wall.rotation} receiveShadow>
++          <planeGeometry args={[wall.size[0], wall.size[1]]} />
++          <meshStandardMaterial map={texture} transparent opacity={0.95} />
++        </mesh>
++      ))}
++    </group>
++  );
++};
++
++const IsometricCamera = () => {
++  const cameraRef = useRef<OrthographicCamera>(null);
++  const { size } = useThree();
++
++  useEffect(() => {
++    if (!cameraRef.current) return;
++    const camera = cameraRef.current;
++    const aspect = size.width / size.height;
++    const frustum = 12;
++    camera.left = (-frustum * aspect) / 2;
++    camera.right = (frustum * aspect) / 2;
++    camera.top = frustum / 2;
++    camera.bottom = -frustum / 2;
++    camera.position.set(12, 12, 12);
++    camera.lookAt(0, 0, 0);
++    camera.near = 0.1;
++    camera.far = 100;
++    camera.zoom = 40;
++    camera.updateProjectionMatrix();
++  }, [size]);
++
++  return <orthographicCamera ref={cameraRef} makeDefault />;
++};
++
++const PromptCafeScene = () => {
++  const { scene } = useThree();
++  const controls = usePlayerControls();
++  const {
++    setPlayerPosition,
++    setPlayerFacing,
++    playerPosition,
++    registerInteraction,
++    updateNPCMovement,
++  } = useGameStore((state) => ({
++    setPlayerPosition: state.setPlayerPosition,
++    setPlayerFacing: state.setPlayerFacing,
++    playerPosition: state.playerPosition,
++    registerInteraction: state.registerInteraction,
++    updateNPCMovement: state.updateNPCMovement,
++  }));
++
++  useEffect(() => {
++    scene.background = new Color('#b8d4f5');
++  }, [scene]);
++
++  useFrame((_, delta) => {
++    updatePlayer({
++      controls,
++      delta,
++      playerPosition,
++      setPlayerFacing,
++      setPlayerPosition,
++    });
++
++    processInteractions({
++      controls,
++      onInteract: registerInteraction,
++    });
++
++    updateNPCMovement(delta);
++  });
++
++  return (
++    <group>
++      <IsometricCamera />
++      <ambientLight intensity={0.8} />
++      <directionalLight position={[8, 16, 10]} intensity={0.75} castShadow />
++      <Floor />
++      <Walls />
++      <Stations />
++      <Player />
++      <NPCs />
++    </group>
++  );
++};
++
++export default PromptCafeScene;
+diff --git a/src/game/state/useGameStore.ts b/src/game/state/useGameStore.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..8671d9510affca799be9a6e0b215d2cf776e0c2e
+--- /dev/null
++++ b/src/game/state/useGameStore.ts
+@@ -0,0 +1,262 @@
++import { create } from 'zustand';
++import { Vector3 } from 'three';
++import { PROMPT_CATEGORIES, PROMPT_OPTIONS, generateRandomOrder, scoreSubmission } from '../systems/OrderSystem';
++import { clampToBounds, createAABB } from '../hooks/useCollision';
++import type { PlayerControls } from '../hooks/usePlayerControls';
++import type {
++  PromptComponentCategory,
++  PromptOrder,
++  PromptScoreGrade,
++  PromptSelection,
++} from '../types';
++
++type NPCState = {
++  id: string;
++  position: [number, number, number];
++  targetIndex: number;
++  mood: 'waiting' | 'served' | 'leaving';
++  order: PromptOrder;
++};
++
++type InteractionZone = {
++  id: 'prompt-bar' | 'serving-pad';
++  bounds: ReturnType<typeof createAABB>;
++};
++
++type GameState = {
++  score: number;
++  servings: number;
++  currentOrder: PromptOrder;
++  playerHasPrompt: boolean;
++  activePromptComponents: string[];
++  queue: PromptOrder[];
++  npcs: NPCState[];
++  playerPosition: [number, number, number];
++  playerFacing: PlayerControls['facing'];
++  interactionZones: InteractionZone[];
++  queuePath: [number, number, number][];
++  barStations: [number, number, number][];
++  servingPad: [number, number, number];
++  bounds: ReturnType<typeof createAABB>;
++  promptOptions: typeof PROMPT_OPTIONS;
++  selectedPrompt: PromptSelection;
++  statusMessage: string;
++  setCurrentOrder: (order: PromptOrder) => void;
++  setPlayerHasPrompt: (value: boolean) => void;
++  incrementScore: (amount: number) => void;
++  incrementServings: () => void;
++  enqueueOrder: (order: PromptOrder) => void;
++  dequeueOrder: () => PromptOrder | undefined;
++  randomizeNextOrder: () => void;
++  setActivePromptComponents: (components: string[]) => void;
++  setPlayerPosition: (position: [number, number, number]) => void;
++  setPlayerFacing: (facing: PlayerControls['facing']) => void;
++  registerInteraction: (zoneId: InteractionZone['id']) => void;
++  updateNPCMovement: (delta: number) => void;
++  setPromptSelection: (category: PromptComponentCategory, value: string) => void;
++  resetPromptSelections: () => void;
++  setStatusMessage: (message: string) => void;
++};
++
++const PLAYER_SPEED = 3.2;
++
++const INITIAL_QUEUE_PATH: [number, number, number][] = [
++  [5, 0, 5],
++  [3, 0, 3],
++  [1, 0, 1],
++  [-1, 0, 0],
++];
++
++const INITIAL_BAR_STATIONS: [number, number, number][] = [
++  [-2, 0, -2],
++  [0, 0, -2],
++  [2, 0, -2],
++];
++
++const SERVING_PAD_POSITION: [number, number, number] = [3, 0, -3];
++
++const WORLD_BOUNDS = createAABB([0, 0, 0], [7, 0, 7]);
++
++const GRADE_MESSAGES: Record<PromptScoreGrade, (score: number) => string> = {
++  perfect: (score) => `Perfect prompt served! +${score} pts`,
++  great: (score) => `Great delivery. +${score} pts`,
++  ok: (score) => `Served with room to iterate. +${score} pts`,
++  miss: (_score) => 'Prompt missed the mark. Recalibrate at the bar.',
++};
++
++const createNPC = (order: PromptOrder, index: number): NPCState => ({
++  id: order.id,
++  position: [...INITIAL_QUEUE_PATH[Math.min(index, INITIAL_QUEUE_PATH.length - 1)]] as [number, number, number],
++  targetIndex: Math.min(index, INITIAL_QUEUE_PATH.length - 1),
++  mood: 'waiting',
++  order,
++});
++
++const generateOrder = (): PromptOrder => ({
++  id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2),
++  ...generateRandomOrder(),
++});
++
++export const useGameStore = create<GameState>((set, get) => {
++  const initialOrder = generateOrder();
++  const secondaryOrder = generateOrder();
++  const queueSeed = [initialOrder, secondaryOrder];
++
++  return {
++    score: 0,
++    servings: 0,
++    currentOrder: initialOrder,
++    playerHasPrompt: false,
++    activePromptComponents: [],
++    queue: queueSeed,
++    npcs: queueSeed.map((order, index) => createNPC(order, index)),
++    playerPosition: [-2, 0, -3],
++    playerFacing: 'idle-down-right',
++    interactionZones: [
++      { id: 'prompt-bar', bounds: createAABB([-2, 0, -2.2], [1.6, 1, 1]) },
++      { id: 'serving-pad', bounds: createAABB(SERVING_PAD_POSITION, [1.2, 1, 1]) },
++    ],
++    queuePath: INITIAL_QUEUE_PATH,
++    barStations: INITIAL_BAR_STATIONS,
++    servingPad: SERVING_PAD_POSITION,
++    bounds: WORLD_BOUNDS,
++    promptOptions: PROMPT_OPTIONS,
++    selectedPrompt: {},
++    statusMessage: 'Welcome to Prompt Cafe. Choose components, then assemble at the bar.',
++    setCurrentOrder: (order) => set({ currentOrder: order }),
++    setPlayerHasPrompt: (value) => set({ playerHasPrompt: value }),
++    incrementScore: (amount) => set((state) => ({ score: state.score + amount })),
++    incrementServings: () => set((state) => ({ servings: state.servings + 1 })),
++    enqueueOrder: (order) =>
++      set((state) => ({
++        queue: [...state.queue, order],
++        npcs: [...state.npcs, createNPC(order, state.npcs.length)],
++      })),
++    dequeueOrder: () => {
++      const state = get();
++      if (state.queue.length === 0) return undefined;
++      const [first, ...rest] = state.queue;
++      set({ queue: rest });
++      return first;
++    },
++    randomizeNextOrder: () => {
++      const order = generateOrder();
++      set((state) => ({
++        currentOrder: order,
++        queue: [...state.queue, order],
++        statusMessage: 'New prompt request added to the queue.',
++      }));
++    },
++    setActivePromptComponents: (components) => set({ activePromptComponents: components }),
++    setPlayerPosition: (position) => set({ playerPosition: clampToBounds(position, WORLD_BOUNDS) }),
++    setPlayerFacing: (facing) => set({ playerFacing: facing }),
++    setPromptSelection: (category, value) =>
++      set((state) => {
++        if (state.playerHasPrompt) {
++          return {};
++        }
++        return {
++          selectedPrompt: { ...state.selectedPrompt, [category]: value },
++          statusMessage: `Selected ${value} ${category}.`,
++        };
++      }),
++    resetPromptSelections: () =>
++      set((state) => {
++        if (state.playerHasPrompt) {
++          return {};
++        }
++        return {
++          selectedPrompt: {},
++          statusMessage: 'Cleared prompt selection.',
++        };
++      }),
++    setStatusMessage: (message) => set({ statusMessage: message }),
++    registerInteraction: (zoneId) => {
++      const state = get();
++      if (zoneId === 'prompt-bar') {
++        if (state.playerHasPrompt) {
++          set({ statusMessage: 'You are already holding a prompt. Serve it at the pad.' });
++          return;
++        }
++
++        const ready = PROMPT_CATEGORIES.every((category) => Boolean(state.selectedPrompt[category]));
++        if (!ready) {
++          set({ statusMessage: 'Select tone, format, audience, and constraint before assembling.' });
++          return;
++        }
++
++        const components = PROMPT_CATEGORIES.map((category) => state.selectedPrompt[category] as string);
++        set({
++          playerHasPrompt: true,
++          activePromptComponents: components,
++          statusMessage: 'Prompt ready. Deliver it to the serving pad.',
++        });
++        return;
++      }
++
++      if (zoneId === 'serving-pad') {
++        if (!state.playerHasPrompt) {
++          set({ statusMessage: 'No prompt to serve. Assemble one at the bar.' });
++          return;
++        }
++
++        const selectionSnapshot: PromptSelection = { ...state.selectedPrompt };
++        const result = scoreSubmission(state.currentOrder, selectionSnapshot);
++        const [, ...restQueue] = state.queue;
++        const replenishedQueue = restQueue.slice();
++        while (replenishedQueue.length < 2) {
++          replenishedQueue.push(generateOrder());
++        }
++        const nextOrder = replenishedQueue[0];
++        const rebuiltNPCs = replenishedQueue.map((order, index) => createNPC(order, index));
++        const messageFactory = GRADE_MESSAGES[result.grade];
++        const statusMessage = messageFactory(result.score);
++
++        set({
++          playerHasPrompt: false,
++          activePromptComponents: [],
++          selectedPrompt: {},
++          currentOrder: nextOrder,
++          queue: replenishedQueue,
++          npcs: rebuiltNPCs,
++          statusMessage,
++        });
++        set((prev) => ({
++          score: prev.score + result.score,
++          servings: prev.servings + 1,
++        }));
++      }
++    },
++    updateNPCMovement: (delta) => {
++      const state = get();
++      const speed = PLAYER_SPEED * 0.6;
++      const updated = state.npcs.map((npc) => {
++        const target = state.queuePath[npc.targetIndex] ?? state.queuePath[state.queuePath.length - 1];
++        const current = new Vector3(...npc.position);
++        const goal = new Vector3(...target);
++        const direction = goal.clone().sub(current);
++        const distance = direction.length();
++        if (distance < 0.05) {
++          const nextIndex = Math.min(state.queuePath.length - 1, npc.targetIndex + 1);
++          if (nextIndex === npc.targetIndex) {
++            return npc;
++          }
++          return {
++            ...npc,
++            targetIndex: nextIndex,
++          };
++        }
++        direction.normalize();
++        const step = Math.min(distance, delta * speed);
++        const nextPosition = current.add(direction.multiplyScalar(step));
++        return {
++          ...npc,
++          position: [nextPosition.x, nextPosition.y, nextPosition.z],
++        };
++      });
++      set({ npcs: updated });
++    },
++  };
++});
++
++export type { NPCState };
+diff --git a/src/game/systems/CollisionSystem.ts b/src/game/systems/CollisionSystem.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..d564653b2ccba1fa682a243d89455a82f394b469
+--- /dev/null
++++ b/src/game/systems/CollisionSystem.ts
+@@ -0,0 +1,26 @@
++import { useGameStore } from '../state/useGameStore';
++import type { PlayerControls } from '../hooks/usePlayerControls';
++import { isPointInsideAABB } from '../hooks/useCollision';
++
++export const processInteractions = ({
++  controls,
++  onInteract,
++}: {
++  controls: PlayerControls;
++  onInteract: (zoneId: 'prompt-bar' | 'serving-pad') => void;
++}) => {
++  if (!controls.interacting) {
++    return;
++  }
++
++  const { playerPosition, interactionZones } = useGameStore.getState();
++  const playerPoint: [number, number, number] = [playerPosition[0], playerPosition[1], playerPosition[2]];
++
++  interactionZones.forEach((zone) => {
++    if (isPointInsideAABB(playerPoint, zone.bounds)) {
++      onInteract(zone.id);
++    }
++  });
++
++  controls.consumeInteraction();
++};
+diff --git a/src/game/systems/MovementSystem.ts b/src/game/systems/MovementSystem.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..6f512ef4aadc3efc8e7a91d617f10b68132c11e4
+--- /dev/null
++++ b/src/game/systems/MovementSystem.ts
+@@ -0,0 +1,34 @@
++import { Vector3 } from 'three';
++import type { PlayerControls } from '../hooks/usePlayerControls';
++import { useGameStore } from '../state/useGameStore';
++
++const PLAYER_SPEED = 4.2;
++
++export const updatePlayer = ({
++  controls,
++  delta,
++  playerPosition,
++  setPlayerPosition,
++  setPlayerFacing,
++}: {
++  controls: PlayerControls;
++  delta: number;
++  playerPosition: [number, number, number];
++  setPlayerPosition: (position: [number, number, number]) => void;
++  setPlayerFacing: (facing: PlayerControls['facing']) => void;
++}) => {
++  const velocity = new Vector3(controls.movement.x, 0, -controls.movement.y);
++  if (velocity.lengthSq() === 0) {
++    setPlayerFacing(controls.facing);
++    return;
++  }
++
++  const next = new Vector3(...playerPosition).addScaledVector(velocity.normalize(), PLAYER_SPEED * delta);
++  setPlayerPosition([next.x, next.y, next.z]);
++  setPlayerFacing(controls.facing);
++};
++
++export const stepNPCQueue = (delta: number) => {
++  const { updateNPCMovement } = useGameStore.getState();
++  updateNPCMovement(delta);
++};
+diff --git a/src/game/systems/OrderSystem.ts b/src/game/systems/OrderSystem.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..19ddc55119bb6b9cc7fdc6fcbb431c7892103a85
+--- /dev/null
++++ b/src/game/systems/OrderSystem.ts
+@@ -0,0 +1,69 @@
++import type {
++  PromptComponentCategory,
++  PromptOptions,
++  PromptOrder,
++  PromptScoreGrade,
++  PromptScoreResult,
++  PromptSelection,
++} from '../types';
++
++const PROMPT_OPTIONS: PromptOptions = {
++  tone: ['witty', 'formal', 'technical', 'venture capitalist'],
++  format: ['email', 'spec', 'pitch deck', 'landing page'],
++  audience: ['founder', 'CTO', 'investor', 'enterprise client'],
++  constraint: ['<200 words', 'legal safe', 'brand voice', 'include KPIs'],
++};
++
++export const PROMPT_CATEGORIES = Object.keys(PROMPT_OPTIONS) as PromptComponentCategory[];
++
++export const generateRandomOrder = () => {
++  const pick = <T,>(options: readonly T[]): T => options[Math.floor(Math.random() * options.length)];
++  return {
++    title: `${pick(['Quantum', 'Neon', 'Azure', 'Lattice'])} ${pick(['Prompt', 'Brew', 'Pulse', 'Canvas'])}`,
++    tone: pick(PROMPT_OPTIONS.tone),
++    format: pick(PROMPT_OPTIONS.format),
++    audience: pick(PROMPT_OPTIONS.audience),
++    constraint: pick(PROMPT_OPTIONS.constraint),
++  };
++};
++
++const SCORE_WEIGHTS: Record<PromptComponentCategory, number> = {
++  tone: 3,
++  format: 3,
++  audience: 2,
++  constraint: 2,
++};
++
++const maxScore = PROMPT_CATEGORIES.reduce((total, category) => total + SCORE_WEIGHTS[category], 0);
++
++const resolveGrade = (score: number): PromptScoreGrade => {
++  const accuracy = score / maxScore;
++  if (accuracy === 1) return 'perfect';
++  if (accuracy >= 0.7) return 'great';
++  if (accuracy >= 0.4) return 'ok';
++  return 'miss';
++};
++
++export const scoreSubmission = (order: PromptOrder, selection: PromptSelection): PromptScoreResult => {
++  const breakdown: Record<PromptComponentCategory, boolean> = {
++    tone: false,
++    format: false,
++    audience: false,
++    constraint: false,
++  };
++
++  const earned = PROMPT_CATEGORIES.reduce((total, category) => {
++    const matched = selection[category] === order[category];
++    breakdown[category] = matched;
++    return matched ? total + SCORE_WEIGHTS[category] : total;
++  }, 0);
++
++  return {
++    score: earned,
++    maxScore,
++    breakdown,
++    grade: resolveGrade(earned),
++  };
++};
++
++export { PROMPT_OPTIONS, maxScore as PROMPT_MAX_SCORE };
+diff --git a/src/game/types.ts b/src/game/types.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..1c6b5424d84f8b56542e9f0da9780736fc3089f1
+--- /dev/null
++++ b/src/game/types.ts
+@@ -0,0 +1,23 @@
++export type PromptOrder = {
++  id: string;
++  title: string;
++  tone: string;
++  format: string;
++  audience: string;
++  constraint: string;
++};
++
++export type PromptComponentCategory = 'tone' | 'format' | 'audience' | 'constraint';
++
++export type PromptSelection = Partial<Record<PromptComponentCategory, string>>;
++
++export type PromptOptions = Record<PromptComponentCategory, readonly string[]>;
++
++export type PromptScoreGrade = 'perfect' | 'great' | 'ok' | 'miss';
++
++export type PromptScoreResult = {
++  score: number;
++  maxScore: number;
++  breakdown: Record<PromptComponentCategory, boolean>;
++  grade: PromptScoreGrade;
++};
+diff --git a/src/index.tsx b/src/index.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..133f59538aca57cb1b9cc84d2f509f77d3ac5be2
+--- /dev/null
++++ b/src/index.tsx
+@@ -0,0 +1,17 @@
++import React from 'react';
++import { createRoot } from 'react-dom/client';
++import App from './App';
++import './styles.css';
++
++const container = document.getElementById('root');
++
++if (!container) {
++  throw new Error('Root element not found');
++}
++
++const root = createRoot(container);
++root.render(
++  <React.StrictMode>
++    <App />
++  </React.StrictMode>
++);
+diff --git a/src/styles.css b/src/styles.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..c92818149955030e108bf42fae7cfaad086eaf53
+--- /dev/null
++++ b/src/styles.css
+@@ -0,0 +1,173 @@
++:root {
++  color-scheme: light;
++  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
++  background-color: #0f172a;
++  color: #e2e8f0;
++}
++
++body, html, #root {
++  margin: 0;
++  padding: 0;
++  width: 100%;
++  height: 100%;
++  overflow: hidden;
++}
++
++.app-container {
++  position: relative;
++  width: 100vw;
++  height: 100vh;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  background: radial-gradient(circle at 20% 20%, rgba(191, 219, 254, 0.12), transparent 55%),
++              radial-gradient(circle at 80% 30%, rgba(125, 211, 252, 0.18), transparent 60%),
++              #0f172a;
++}
++
++.app-canvas {
++  width: 100%;
++  height: 100%;
++}
++
++.hud-overlay {
++  position: absolute;
++  top: 0;
++  left: 0;
++  width: 100%;
++  pointer-events: none;
++  z-index: 10;
++  display: flex;
++  flex-direction: column;
++  justify-content: space-between;
++  padding: 1.5rem;
++  box-sizing: border-box;
++}
++
++.hud-card {
++  backdrop-filter: blur(16px);
++  background: rgba(15, 23, 42, 0.68);
++  border: 1px solid rgba(148, 163, 184, 0.35);
++  border-radius: 12px;
++  padding: 1rem 1.25rem;
++  pointer-events: auto;
++}
++
++.hud-grid {
++  display: grid;
++  gap: 0.75rem;
++}
++
++.hud-title {
++  font-size: 1.75rem;
++  font-weight: 700;
++  letter-spacing: 0.08em;
++  text-transform: uppercase;
++  color: #bae6fd;
++  margin: 0;
++}
++
++.hud-value {
++  font-size: 1.25rem;
++  font-weight: 600;
++  color: #f8fafc;
++}
++
++.hud-label {
++  font-size: 0.75rem;
++  text-transform: uppercase;
++  letter-spacing: 0.08em;
++  color: #94a3b8;
++}
++
++.hud-order-section {
++  display: grid;
++  gap: 0.35rem;
++}
++
++.hud-prompt-indicator {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.5rem;
++  font-size: 0.9rem;
++}
++
++.hud-builder {
++  display: grid;
++  gap: 1rem;
++}
++
++.hud-builder-grid {
++  display: grid;
++  gap: 0.75rem;
++}
++
++.hud-builder-category {
++  display: grid;
++  gap: 0.45rem;
++}
++
++.hud-builder-options {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 0.5rem;
++}
++
++.hud-option {
++  background: rgba(59, 130, 246, 0.18);
++  color: #bfdbfe;
++  border: 1px solid rgba(148, 163, 184, 0.35);
++  border-radius: 999px;
++  padding: 0.4rem 0.85rem;
++  font-size: 0.85rem;
++  letter-spacing: 0.04em;
++  text-transform: uppercase;
++  cursor: pointer;
++  transition: background 0.2s ease, color 0.2s ease, border 0.2s ease;
++}
++
++.hud-option.is-active {
++  background: rgba(14, 165, 233, 0.35);
++  border-color: rgba(14, 165, 233, 0.6);
++  color: #f8fafc;
++}
++
++.hud-option:disabled {
++  cursor: not-allowed;
++  opacity: 0.55;
++}
++
++.hud-option--ghost {
++  background: transparent;
++  color: #94a3b8;
++}
++
++.hud-builder-footer {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 1rem;
++}
++
++.hud-status {
++  font-size: 0.85rem;
++  color: #e0f2fe;
++}
++
++.debug-panel {
++  position: absolute;
++  bottom: 1rem;
++  right: 1rem;
++  pointer-events: auto;
++  font-family: 'JetBrains Mono', 'Fira Code', monospace;
++  font-size: 0.75rem;
++  background: rgba(15, 23, 42, 0.75);
++  border: 1px solid rgba(148, 163, 184, 0.4);
++  border-radius: 10px;
++  padding: 0.75rem 1rem;
++  color: #94a3b8;
++}
++
++.debug-panel strong {
++  color: #f8fafc;
++}
+diff --git a/src/ui/DebugPanel.tsx b/src/ui/DebugPanel.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..1c5322a3de92945e008f0495534b0bbccb9825f0
+--- /dev/null
++++ b/src/ui/DebugPanel.tsx
+@@ -0,0 +1,35 @@
++import { useMemo } from 'react';
++import { useGameStore } from '../game/state/useGameStore';
++
++const DebugPanel = () => {
++  const state = useGameStore((store) => ({
++    playerPosition: store.playerPosition,
++    playerFacing: store.playerFacing,
++    queueLength: store.queue.length,
++    npcs: store.npcs,
++  }));
++
++  const position = useMemo(
++    () => state.playerPosition.map((coord) => coord.toFixed(2)).join(', '),
++    [state.playerPosition]
++  );
++
++  return (
++    <div className="debug-panel">
++      <div>
++        <strong>Player:</strong> {position}
++      </div>
++      <div>
++        <strong>Facing:</strong> {state.playerFacing}
++      </div>
++      <div>
++        <strong>Queue:</strong> {state.queueLength} NPCs
++      </div>
++      <div>
++        <strong>NPC Targets:</strong> {state.npcs.map((npc) => npc.targetIndex).join(', ')}
++      </div>
++    </div>
++  );
++};
++
++export default DebugPanel;
+diff --git a/src/ui/Hud.tsx b/src/ui/Hud.tsx
+new file mode 100644
+index 0000000000000000000000000000000000000000..16f6ff3993b7d123ee39ef2c6269673688ce912b
+--- /dev/null
++++ b/src/ui/Hud.tsx
+@@ -0,0 +1,133 @@
++import { useEffect, useMemo } from 'react';
++import { PROMPT_CATEGORIES } from '../game/systems/OrderSystem';
++import { useGameStore } from '../game/state/useGameStore';
++import type { PromptComponentCategory } from '../game/types';
++
++const Hud = () => {
++  const {
++    score,
++    servings,
++    currentOrder,
++    playerHasPrompt,
++    activePromptComponents,
++    promptOptions,
++    selectedPrompt,
++    statusMessage,
++    setPromptSelection,
++    resetPromptSelections,
++  } = useGameStore(
++    (state) => ({
++      score: state.score,
++      servings: state.servings,
++      currentOrder: state.currentOrder,
++      playerHasPrompt: state.playerHasPrompt,
++      activePromptComponents: state.activePromptComponents,
++      promptOptions: state.promptOptions,
++      selectedPrompt: state.selectedPrompt,
++      statusMessage: state.statusMessage,
++      setPromptSelection: state.setPromptSelection,
++      resetPromptSelections: state.resetPromptSelections,
++    })
++  );
++
++  useEffect(() => {
++    document.title = `Prompt Cafe — Score ${score}`;
++  }, [score]);
++
++  const currentSelectionSummary = useMemo(() => {
++    return PROMPT_CATEGORIES
++      .map((category) => selectedPrompt[category])
++      .filter(Boolean)
++      .join(', ');
++  }, [selectedPrompt]);
++
++  const formatCategoryLabel = (category: PromptComponentCategory) =>
++    category.charAt(0).toUpperCase() + category.slice(1);
++
++  return (
++    <div className="hud-grid">
++      <section className="hud-card">
++        <h1 className="hud-title">Prompt Cafe</h1>
++        <p className="hud-label">Futuristic Barista Ops</p>
++      </section>
++
++      <section className="hud-card">
++        <div className="hud-grid">
++          <div>
++            <div className="hud-label">Score</div>
++            <div className="hud-value">{score}</div>
++          </div>
++          <div>
++            <div className="hud-label">Servings</div>
++            <div className="hud-value">{servings}</div>
++          </div>
++        </div>
++      </section>
++
++      <section className="hud-card hud-order-section">
++        <div className="hud-label">Current Order</div>
++        <div className="hud-value">{currentOrder.title}</div>
++        <div className="hud-grid">
++          <span className="hud-label">Tone</span>
++          <span>{currentOrder.tone}</span>
++          <span className="hud-label">Format</span>
++          <span>{currentOrder.format}</span>
++          <span className="hud-label">Audience</span>
++          <span>{currentOrder.audience}</span>
++          <span className="hud-label">Constraint</span>
++          <span>{currentOrder.constraint}</span>
++        </div>
++        <div className="hud-prompt-indicator">
++          <span className="hud-label">Prompt Ready</span>
++          <span>{playerHasPrompt ? 'Yes' : 'No'}</span>
++        </div>
++        {playerHasPrompt && (
++          <div className="hud-label">Loaded Prompt: {activePromptComponents.join(', ')}</div>
++        )}
++      </section>
++
++      <section className="hud-card hud-builder">
++        <div className="hud-label">Assemble Prompt Components</div>
++        <div className="hud-builder-grid">
++          {PROMPT_CATEGORIES.map((category) => (
++            <div key={category} className="hud-builder-category">
++              <div className="hud-label">{formatCategoryLabel(category)}</div>
++              <div className="hud-builder-options">
++                {promptOptions[category].map((option) => {
++                  const isActive = selectedPrompt[category] === option;
++                  return (
++                    <button
++                      key={option}
++                      type="button"
++                      className={`hud-option${isActive ? ' is-active' : ''}`}
++                      onClick={() => setPromptSelection(category, option)}
++                      disabled={playerHasPrompt}
++                    >
++                      {option}
++                    </button>
++                  );
++                })}
++              </div>
++            </div>
++          ))}
++        </div>
++        <div className="hud-builder-footer">
++          <button
++            type="button"
++            className="hud-option hud-option--ghost"
++            onClick={resetPromptSelections}
++            disabled={playerHasPrompt}
++          >
++            Clear Selection
++          </button>
++          <div className="hud-status">{statusMessage}</div>
++        </div>
++        {currentSelectionSummary && !playerHasPrompt && (
++          <div className="hud-label">Current Selection: {currentSelectionSummary}</div>
++        )}
++      </section>
++    </div>
++  );
++};
++
++export default Hud;
+diff --git a/tsconfig.json b/tsconfig.json
+index 2c6eed55868c7545e8f265f260277fb0605b2dbc..4e0c90767ed4a1a5fad71d0b8cd15bcc5198bde0 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -1,29 +1,18 @@
+ {
+   "compilerOptions": {
+     "target": "ES2022",
+-    "experimentalDecorators": true,
+-    "useDefineForClassFields": false,
+     "module": "ESNext",
+-    "lib": [
+-      "ES2022",
+-      "DOM",
+-      "DOM.Iterable"
+-    ],
++    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+     "skipLibCheck": true,
+-    "types": [
+-      "node"
+-    ],
+     "moduleResolution": "bundler",
+     "isolatedModules": true,
+-    "moduleDetection": "force",
+-    "allowJs": true,
++    "allowJs": false,
+     "jsx": "react-jsx",
++    "baseUrl": "./src",
+     "paths": {
+-      "@/*": [
+-        "./*"
+-      ]
++      "@/*": ["./*"]
+     },
+     "allowImportingTsExtensions": true,
+     "noEmit": true
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/types.ts b/types.ts
+deleted file mode 100644
+index 26d47c0be3abd18825147c6ed06ae8c725ccd12a..0000000000000000000000000000000000000000
+--- a/types.ts
++++ /dev/null
+@@ -1,14 +0,0 @@
+-
+-export interface GamePlan {
+-  title: string;
+-  tagline: string;
+-  coreLoop: string[];
+-  learningObjectives: string[];
+-  levels: {
+-    title: string;
+-    description: string;
+-    exampleChallenge: string;
+-  }[];
+-  monetizationIdea: string;
+-}
+-   
+\ No newline at end of file
+diff --git a/vite.config.ts b/vite.config.ts
+index ee5fb8d2dfb261530fb407cb2f28599d50fcae26..444569cb4b54e753316c8844eb8632348c20bf02 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -1,23 +1,16 @@
+-import path from 'path';
+-import { defineConfig, loadEnv } from 'vite';
++import { defineConfig } from 'vite';
+ import react from '@vitejs/plugin-react';
++import path from 'path';
+ 
+-export default defineConfig(({ mode }) => {
+-    const env = loadEnv(mode, '.', '');
+-    return {
+-      server: {
+-        port: 3000,
+-        host: '0.0.0.0',
+-      },
+-      plugins: [react()],
+-      define: {
+-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+-      },
+-      resolve: {
+-        alias: {
+-          '@': path.resolve(__dirname, '.'),
+-        }
+-      }
+-    };
++export default defineConfig({
++  plugins: [react()],
++  server: {
++    host: '0.0.0.0',
++    port: 3000,
++  },
++  resolve: {
++    alias: {
++      '@': path.resolve(__dirname, 'src'),
++    },
++  },
+ });
+ 
+EOF
+)

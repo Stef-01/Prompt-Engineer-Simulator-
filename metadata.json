@@ -1,5 +1,0 @@
-{
-  "name": "Prompt Engineering Game Planner",
-  "description": "Generate a basic plan for a game focused on prompt engineering. Provide a core concept, and the AI will create a structured game plan including a title, core loop, learning objectives, and example levels.",
-  "requestFramePermissions": []
-}
